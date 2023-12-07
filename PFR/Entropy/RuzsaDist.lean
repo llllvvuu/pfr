@@ -67,13 +67,13 @@ lemma continuous_measureEntropy_probabilityMeasure {Ω : Type*} [Fintype Ω]
   apply continuous_finset_sum
   intro ω _
   apply Real.continuous_negMulLog.comp
-  simp only [measure_univ, inv_one, one_smul]
+  simp_rw [measure_univ, inv_one, one_smul]
   exact continuous_probabilityMeasure_apply_of_isClopen (s := {ω}) ⟨isOpen_discrete _, T1Space.t1 _⟩
 
 lemma continuous_entropy_restrict_probabilityMeasure
     [TopologicalSpace G] [DiscreteTopology G] [BorelSpace G] :
     Continuous (fun (μ : ProbabilityMeasure G) ↦ H[id ; μ.toMeasure]) := by
-  simp only [entropy_def, Measure.map_id]
+  simp_rw [entropy_def, Measure.map_id]
   exact continuous_measureEntropy_probabilityMeasure
 
 /-- Ruzsa distance depends continuously on the measure. -/
@@ -82,22 +82,22 @@ lemma continuous_rdist_restrict_probabilityMeasure
     Continuous
       (fun (μ : ProbabilityMeasure G × ProbabilityMeasure G) ↦
         d[id ; μ.1.toMeasure # id ; μ.2.toMeasure]) := by
-  simp [rdist_def]
+  simp_rw [rdist_def, Measure.map_id]
   have obs₀ : Continuous (fun (μ : ProbabilityMeasure G × ProbabilityMeasure G) ↦
       H[fun x ↦ x.1 - x.2 ; μ.1.toMeasure.prod μ.2.toMeasure]) := by
     simp_rw [entropy_def]
-    have diff_cts : Continuous (fun (x : G × G) ↦ x.1 - x.2) := by continuity
+    have diff_cts : Continuous (fun (x : G × G) ↦ x.1 - x.2) := continuous_of_discreteTopology
     have key₁ := ProbabilityMeasure.continuous_prod_of_finite (α := G) (β := G)
     have key₂ := ProbabilityMeasure.continuous_map diff_cts
     convert continuous_measureEntropy_probabilityMeasure.comp (key₂.comp key₁)
   have obs₁ : Continuous
       (fun (μ : ProbabilityMeasure G × ProbabilityMeasure G) ↦ H[id ; μ.1.toMeasure]) := by
     convert (continuous_measureEntropy_probabilityMeasure (Ω := G)).comp continuous_fst
-    simp [entropy_def]
+    simp_rw [entropy_def, Measure.map_id] ; rfl
   have obs₂ : Continuous
       (fun (μ : ProbabilityMeasure G × ProbabilityMeasure G) ↦ H[id ; μ.2.toMeasure]) := by
     convert (continuous_measureEntropy_probabilityMeasure (Ω := G)).comp continuous_snd
-    simp [entropy_def]
+    simp_rw [entropy_def, Measure.map_id] ; rfl
   continuity
 
 lemma continuous_rdist_restrict_probabilityMeasure₁
@@ -105,16 +105,16 @@ lemma continuous_rdist_restrict_probabilityMeasure₁
     (X : Ω → G) (P : Measure Ω := by volume_tac) [IsProbabilityMeasure P] (X_mble : Measurable X) :
     Continuous
       (fun (μ : ProbabilityMeasure G) ↦ d[id ; P.map X # id ; μ.toMeasure]) := by
-  have obs : IsProbabilityMeasure (P.map X) := by
-    refine ⟨by simp [Measure.map_apply X_mble MeasurableSet.univ]⟩
+  have obs : IsProbabilityMeasure (P.map X) :=
+    ⟨by rw [Measure.map_apply X_mble MeasurableSet.univ, Set.preimage_univ, measure_univ]⟩
   let ι : ProbabilityMeasure G → ProbabilityMeasure G × ProbabilityMeasure G :=
-      fun ν ↦ ⟨⟨P.map X, obs⟩, ν⟩
+    fun ν ↦ ⟨⟨P.map X, obs⟩, ν⟩
   have ι_cont : Continuous ι := Continuous.Prod.mk _
   convert continuous_rdist_restrict_probabilityMeasure.comp ι_cont
 
 /-- Ruzsa distance between random variables equals Ruzsa distance between their distributions.-/
 lemma rdist_eq_rdist_id_map : d[X ; μ # Y ; μ'] = d[id ; μ.map X # id ; μ'.map Y] := by
-  simp only [rdist_def, entropy_def, Measure.map_id]
+  simp_rw [rdist_def, entropy_def, Measure.map_id]
 
 /-- Ruzsa distance depends continuously on the second measure. -/
 lemma continuous_rdist_restrict_probabilityMeasure₁'
@@ -122,14 +122,14 @@ lemma continuous_rdist_restrict_probabilityMeasure₁'
     (X : Ω → G) (P : Measure Ω := by volume_tac) [IsProbabilityMeasure P] (X_mble : Measurable X) :
     Continuous
       (fun (μ : ProbabilityMeasure G) ↦ d[X ; P # id ; μ.toMeasure]) := by
-  simp only [@rdist_eq_rdist_id_map Ω G G mΩ P hG, Measure.map_id]
+  simp_rw [@rdist_eq_rdist_id_map Ω G G mΩ P hG, Measure.map_id]
   exact continuous_rdist_restrict_probabilityMeasure₁ _ _ X_mble
 
 /-- If $X', Y'$ are copies of $X, Y$ respectively then $d[X' ; Y']=d[X ; Y]$. -/
 lemma ProbabilityTheory.IdentDistrib.rdist_eq {X' : Ω'' → G} {Y' : Ω''' →G}
     (hX : IdentDistrib X X' μ μ'') (hY : IdentDistrib Y Y' μ' μ''') :
     d[X ; μ # Y ; μ'] = d[X' ; μ'' # Y' ; μ'''] := by
-  simp [rdist, hX.map_eq, hY.map_eq, hX.entropy_eq, hY.entropy_eq]
+  simp_rw [rdist, hX.map_eq, hY.map_eq, hX.entropy_eq, hY.entropy_eq]
 
 /-- If $X, Y$ are independent $G$-random variables then
 $$ d[X ; Y] := H[X - Y] - H[X]/2 - H[Y]/2$$-/
@@ -149,7 +149,8 @@ lemma rdist_symm [IsFiniteMeasure μ] [IsFiniteMeasure μ'] :
   rw [rdist_def, rdist_def, sub_sub, sub_sub, add_comm]
   congr 1
   rw [← entropy_neg (measurable_fst.sub measurable_snd)]
-  have : (-fun x : G × G ↦ x.1 - x.2) = (fun x ↦ x.1 - x.2) ∘ Prod.swap := by ext ; simp
+  have : (-fun x : G × G ↦ x.1 - x.2) = (fun x ↦ x.1 - x.2) ∘ Prod.swap :=
+    funext fun x ↦ (Pi.neg_apply _ _).trans (neg_sub _ _)
   rw [this, entropy_def, ← Measure.map_map (measurable_fst.sub measurable_snd) measurable_swap,
     Measure.prod_swap]
   rfl
@@ -194,7 +195,7 @@ lemma rdist_add_const [IsProbabilityMeasure μ] [IsProbabilityMeasure μ']
   have B : IndepFun X' (fun ω ↦ Y' ω + c) ν :=
     hind.comp measurable_id (measurable_add_const c)
   have C : X' - (fun ω ↦ Y' ω + c) = fun ω ↦ (X' - Y') ω + (-c) := by
-    ext ω; simp; abel
+    ext; simp_rw [Pi.sub_apply]; abel
   rw [← hIdX.rdist_eq hIdY, ← hIdX.rdist_eq A, hind.rdist_eq hX' hY',
     B.rdist_eq hX' (hY'.add_const _), entropy_add_const _ _ hY', C, entropy_add_const]
   exact hX'.sub hY'
@@ -306,16 +307,15 @@ lemma condRuzsaDist_eq_sum {X : Ω → G} {Z : Ω → S} {Y : Ω' → G} {W : Ω
   congr with z
   congr with w
   by_cases hz : μ (Z ⁻¹' {z}) = 0
-  · simp only [mul_eq_mul_left_iff, mul_eq_zero]
+  · rw [mul_eq_mul_left_iff, mul_eq_zero]
     refine Or.inr (Or.inl ?_)
-    simp [ENNReal.toReal_eq_zero_iff, measure_ne_top μ, hz]
+    rw [hz] ; rfl
   by_cases hw : μ' (W ⁻¹' {w}) = 0
-  · simp only [mul_eq_mul_left_iff, mul_eq_zero]
+  · rw [mul_eq_mul_left_iff, mul_eq_zero]
     refine Or.inr (Or.inr ?_)
-    simp [ENNReal.toReal_eq_zero_iff, measure_ne_top μ', hw]
+    rw [hw] ; rfl
   congr 1
-  rw [rdist_eq_rdistm]
-  rw [condEntropyKernel_apply hX hZ _ _ hz, condEntropyKernel_apply hY hW _ _ hw]
+  rw [rdist_eq_rdistm, condEntropyKernel_apply hX hZ _ _ hz, condEntropyKernel_apply hY hW _ _ hw]
 
 /-- The conditional Ruzsa distance `d[X ; Y|W]`. -/
 noncomputable
@@ -348,9 +348,8 @@ lemma condRuzsaDist'_eq_sum {X : Ω → G} {Y : Ω' → G} {W : Ω' → T}
   simp_rw [Measure.map_apply hW (measurableSet_singleton _)]
   congr with w
   by_cases hw : μ' (W ⁻¹' {w}) = 0
-  · simp only [mul_eq_mul_left_iff]
-    refine Or.inr ?_
-    simp [ENNReal.toReal_eq_zero_iff, measure_ne_top μ', hw]
+  · refine mul_eq_mul_left_iff.mpr (Or.inr ?_)
+    rw [hw] ; rfl
   congr 1
   rw [rdist_eq_rdistm, condEntropyKernel_apply hY hW _ _ hw]
   congr
@@ -374,7 +373,7 @@ lemma condRuzsaDist_of_const {X : Ω → G} (hX : Measurable X) (Y : Ω' → G) 
   have hc : MeasurableSet (Prod.fst ⁻¹' {c} : Set (S × G)) := measurable_fst (by simp)
   rw [condRuzsaDist_def, condRuzsaDist'_def, Measure.map_const,measure_univ,one_smul, kernel.rdist,
     kernel.rdist, integral_prod,integral_dirac,integral_prod,integral_dirac]
-  dsimp; congr; ext x; congr
+  dsimp; congr; ext; congr
   rw [condEntropyKernel, kernel.comap_apply, kernel.condKernel_apply_of_ne_zero _ _ _]
   ext s hs
   rw [Measure.map_apply measurable_snd hs, kernel.const_apply, cond_apply _ hc,
@@ -501,13 +500,13 @@ lemma condRuzsaDist_of_copy {X : Ω → G} (hX : Measurable X) {Z : Ω → S} (h
     Measure.map_apply hW (measurableSet_singleton _)]
   congr with x
   by_cases hz : μ (Z ⁻¹' {x.1}) = 0
-  · simp only [smul_eq_mul, mul_eq_mul_left_iff, mul_eq_zero]
+  · simp_rw [smul_eq_mul, mul_eq_mul_left_iff, mul_eq_zero]
     refine Or.inr (Or.inl ?_)
-    simp [ENNReal.toReal_eq_zero_iff, measure_ne_top, hz]
+    rw [hz] ; rfl
   by_cases hw : μ' (W ⁻¹' {x.2}) = 0
-  · simp only [smul_eq_mul, mul_eq_mul_left_iff, mul_eq_zero]
+  · simp_rw [smul_eq_mul, mul_eq_mul_left_iff, mul_eq_zero]
     refine Or.inr (Or.inr ?_)
-    simp [ENNReal.toReal_eq_zero_iff, measure_ne_top, hw]
+    rw [hw] ; rfl
   congr 2
   · have hZZ'x : μ (Z ⁻¹' {x.1}) = μ'' (Z' ⁻¹' {x.1}) := by
       have : μ.map Z {x.1} = μ''.map Z' {x.1} := by rw [hZZ']
@@ -549,9 +548,9 @@ lemma condRuzsaDist'_of_copy (X : Ω → G) {Y : Ω' → G} (hY : Measurable Y)
     Measure.map_apply hW (measurableSet_singleton _)]
   congr with x
   by_cases hw : μ' (W ⁻¹' {x.2}) = 0
-  · simp only [smul_eq_mul, mul_eq_mul_left_iff, mul_eq_zero]
+  · simp_rw [smul_eq_mul, mul_eq_mul_left_iff, mul_eq_zero]
     refine Or.inr (Or.inr ?_)
-    simp [ENNReal.toReal_eq_zero_iff, measure_ne_top, hw]
+    rw [hw, ENNReal.zero_toReal]
   congr 2
   · rw [kernel.const_apply, kernel.const_apply, h1.map_eq]
   · have hWW'x : μ' (W ⁻¹' {x.2}) = μ''' (W' ⁻¹' {x.2}) := by
@@ -620,7 +619,7 @@ lemma condRuzsaDist'_of_inj_map [IsProbabilityMeasure μ] [elem: ElementaryAddCo
         · have h1 : (⟨Y 0, Y 2⟩) = (fun x ↦ (-x, 0)) ∘ X := by ext1 ω; simp
           have h2 : (⟨Y 1, Y 3⟩) = (fun p ↦ (p.2, p.1 + p.2)) ∘ (⟨B, C⟩) := by
             ext1 ω;
-            simp only [ElementaryAddCommGroup.neg_eq_self, Matrix.cons_val_one, Matrix.head_cons,
+            simp_rw [ElementaryAddCommGroup.neg_eq_self, Matrix.cons_val_one, Matrix.head_cons,
               Function.comp_apply, Prod.mk.injEq, Matrix.cons_val', Pi.add_apply, Matrix.empty_val',
               Matrix.cons_val_fin_one, true_and]
             congr
@@ -629,9 +628,7 @@ lemma condRuzsaDist'_of_inj_map [IsProbabilityMeasure μ] [elem: ElementaryAddCo
           · exact measurable_neg.prod_mk measurable_const
           · exact measurable_snd.prod_mk (measurable_fst.add measurable_snd)
   _ = d[-X ; μ # C | B + C ; μ] := by rw [condRuzsaDist_of_const]; exact hX.neg
-  _ = d[X ; μ # C | B + C ; μ] := by -- because ElementaryAddCommGroup G 2
-        congr
-        simp
+  _ = d[X ; μ # C | B + C ; μ] := by rw [ElementaryAddCommGroup.neg_eq_self]
 
 lemma condRuzsaDist'_of_inj_map' [elem: ElementaryAddCommGroup G 2] [IsProbabilityMeasure μ] [IsProbabilityMeasure μ'']
   {A : Ω'' → G} {B C : Ω → G} (hA : Measurable A) (hB : Measurable B)
@@ -653,35 +650,31 @@ lemma condRuzsaDist'_of_inj_map' [elem: ElementaryAddCommGroup G 2] [IsProbabili
     · constructor
       · exact hA.aemeasurable
       · exact hX₂'.aemeasurable
-      · rw [← Measure.map_map hA measurable_fst]
-        simp
+      · rw [← Measure.map_map hA measurable_fst, Measure.map_fst_prod, measure_univ, one_smul]
     · constructor
       · exact (hB.prod_mk (hB.add hC)).aemeasurable
       · exact (hB'.prod_mk (hB'.add hC')).aemeasurable
-      · have : ⟨B', B' + C'⟩ = (⟨B, B + C⟩) ∘ Prod.snd := by ext1 _; simp
+      · have : ⟨B', B' + C'⟩ = (⟨B, B + C⟩) ∘ Prod.snd := by ext : 1 ; rfl
         rw [this, ← Measure.map_map _ measurable_snd]
-        · simp only [Measure.map_snd_prod, measure_univ, one_smul]
-          rfl
+        · rw [Measure.map_snd_prod, measure_univ, one_smul] ; rfl
         · exact hB.prod_mk (hB.add hC)
   have h2 : d[A ; μ'' # C | B + C ; μ] = d[X₂' ; μ' # C' | B' + C' ; μ'] := by
     apply condRuzsaDist'_of_copy _ hC (hB.add hC) X₂' hC' (hB'.add hC') ?_ ?_
     · constructor
       · exact hA.aemeasurable
       · exact hX₂'.aemeasurable
-      · rw [← Measure.map_map hA measurable_fst]
-        simp
+      · rw [← Measure.map_map hA measurable_fst, Measure.map_fst_prod, measure_univ, one_smul]
     · constructor
       · exact (hC.prod_mk (hB.add hC)).aemeasurable
       · exact (hC'.prod_mk (hB'.add hC')).aemeasurable
       · have : ⟨C', B' + C'⟩ = (⟨C, B + C⟩) ∘ Prod.snd := by ext1 _; simp
         rw [(show (fun a ↦ B' a + C' a) = B' + C' from rfl), this, ← Measure.map_map _ measurable_snd]
-        · simp only [Measure.map_snd_prod, measure_univ, one_smul]
-          rfl
+        · rw [Measure.map_snd_prod, measure_univ, one_smul] ; rfl
         · exact hC.prod_mk (hB.add hC)
   rw [h1, h2, condRuzsaDist'_of_inj_map hX₂' hB' hC']
   rw [indepFun_iff_map_prod_eq_prod_map_map hX₂'.aemeasurable (hB'.prod_mk hC').aemeasurable]
-  have h_prod : (fun ω ↦ (X₂' ω, prod B' C' ω)) = Prod.map A (⟨B, C⟩) := by ext1; simp
-  have h_comp_snd : (fun a ↦ (B' a, C' a)) = (⟨B, C⟩) ∘ Prod.snd := by ext1; simp
+  have h_prod : (fun ω ↦ (X₂' ω, prod B' C' ω)) = Prod.map A (⟨B, C⟩) := by ext1; rfl
+  have h_comp_snd : (fun a ↦ (B' a, C' a)) = (⟨B, C⟩) ∘ Prod.snd := by ext1; rfl
   rw [h_prod, h_comp_snd, hX₂'_def, ← Measure.map_map _ measurable_snd,
     ← Measure.map_map _ measurable_fst, Measure.map_prod_map]
   rotate_left

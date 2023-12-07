@@ -302,8 +302,8 @@ lemma iIndepFun.pi
   have box (i : ι) (hi : i ∈ s) : E i = ⋂ j : κ i, (f i j)⁻¹' (sets' i j) := by
     rw [← (h_sets ⟨ i, hi ⟩).right]
     simp only [hi]
-    ext1
-    simp_rw [Set.mem_preimage, Set.mem_univ_pi, Set.mem_iInter]
+    ext
+    rw [Set.mem_preimage, Set.mem_univ_pi, Set.mem_iInter]
     exact ⟨ fun hj j ↦ mem_preimage.mpr (hj j), fun hj j ↦ mem_preimage.mp (hj j) ⟩
   suffices : μ (⋂ i ∈ s, ⋂ j : κ i, (f i j)⁻¹' (sets' i j) ) =
     ∏ i in s, μ (⋂ j : κ i, (f i j)⁻¹' (sets' i j))
